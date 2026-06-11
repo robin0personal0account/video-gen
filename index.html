@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CodeScript | Video Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+            line-height: 1.5;
+            padding: 20px 16px;
+        }
+
+        /* clean container - mobile first */
+        .container {
+            max-width: 580px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* simple header */
+        .header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #0f2b3d 0%, #1e4a76 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .sub {
+            font-size: 14px;
+            color: #5b6e8c;
+        }
+
+        /* card - clean, no extra icons */
+        .card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9edf2;
+        }
+
+        /* form elements */
+        label {
+            font-weight: 600;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 220px;
+            background: #fefefe;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 14px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #0f172a;
+            resize: vertical;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 18px;
+            font-size: 14px;
+            color: #0f172a;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6e8c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        select:focus, input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        /* primary button - clean */
+        .btn-gen {
+            width: 100%;
+            background: #0f2b3d;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-gen:hover {
+            background: #1e4a6e;
+        }
+
+        /* result area */
+        pre {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 20px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            color: #cbd5e6;
+            line-height: 1.45;
+            border: 1px solid #1e2a3e;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .btn-copy {
+            width: 100%;
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            padding: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-top: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: #e6edf4;
+        }
+
+        /* hide toast if any unnecessary? but we keep minimal toast */
+        .toast {
+            visibility: hidden;
+            min-width: 180px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: center;
+            border-radius: 40px;
+            padding: 8px 16px;
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        hr {
+            margin: 12px 0;
+            border: 0;
+            height: 1px;
+            background: #eef2f0;
+        }
+
+        .space-top {
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>CodeScript</h1>
+        <div class="sub">Generate Python video script from code</div>
+    </div>
+
+    <div class="card">
+        <label>📄 Code</label>
+        <textarea id="code" placeholder="def example():&#10;    print('Hello world')&#10;&#10;example()"></textarea>
+
+        <label class="space-top">Language</label>
+        <select id="language">
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+        </select>
+
+        <label class="space-top">Output filename</label>
+        <input id="output" value="output.mp4" placeholder="video.mp4">
+
+        <button class="btn-gen" onclick="generateScript()">Generate Python Script</button>
+    </div>
+
+    <div class="card">
+        <label>📜 Generated Script</label>
+        <pre id="result"># Click "Generate Python Script"</pre>
+        <button class="btn-copy" onclick="copyScript()">Copy Script</button>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast">Copied!</div>
+
+<script>
+    function generateScript() {
+        let code = document.getElementById("code").value;
+        const language = document.getElementById("language").value;
+        let outputName = document.getElementById("output").value.trim();
+
+        if (outputName === "") outputName = "output.mp4";
+        if (code === "") {
+            code = "# Your code here\nprint('Hello from CodeScript')";
+        }
+
+        // escape triple quotes inside code to avoid breaking raw string
+        let escapedCode = code.replace(/'''/g, "\\'\\'\\'");
+
+        const script = `from CodeVideoRenderer import *
+
+code_snippet = r\'\'\'
+${escapedCode}
+\'\'\'
+
+video = CodeVideo(
+    code_string=code_snippet,
+    language='${language}'
+)
+
+video.render()
+video.save('${outputName}')
+
+print("Video saved: ${outputName}")`;
+
+        document.getElementById("result").textContent = script;
+
+        // subtle visual feedback
+        const btn = document.querySelector('.btn-gen');
+        const originalText = btn.innerText;
+        btn.innerText = '✓ Generated';
+        setTimeout(() => { btn.innerText = originalText; }, 1200);
+    }
+
+    function copyScript() {
+        const text = document.getElementById("result").textContent;
+        if (!text || text.includes("Click \"Generate\"")) {
+            showToast("Generate a script first");
+            return;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("Copied to clipboard");
+            const copyBtn = document.querySelector('.btn-copy');
+            const original = copyBtn.innerText;
+            copyBtn.innerText = '✓ Copied!';
+            setTimeout(() => { copyBtn.innerText = original; }, 1000);
+        }).catch(() => {
+            showToast("Manual copy failed");
+        });
+    }
+
+    function showToast(msg) {
+        let toast = document.getElementById("toastMsg");
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 1800);
+    }
+
+    // set default example on load (clean first experience)
+    window.addEventListener('DOMContentLoaded', () => {
+        const codeArea = document.getElementById("code");
+        if (!codeArea.value) {
+            codeArea.value = `def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+
+print(quick_sort([3,6,8,10,1,2,1]))`;
+        }
+        // auto generate initial script
+        generateScript();
+    });
+</script>
+</body>
+</html>
